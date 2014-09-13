@@ -1,6 +1,6 @@
 {
   "name": "memored",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Shared in-memory module for cluster applications",
   "main": "index.js",
   "scripts": {
