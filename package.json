@@ -1,6 +1,6 @@
 {
   "name": "memored",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Shared in-memory module for cluster applications",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,11 @@
   },
   "author": "Paquitosoft",
   "license": "MIT",
+  "keywords": [
+  	"cache",
+  	"memory",
+  	"shared"
+  ],
   "devDependencies": {
     "async": "^0.9.0",
     "chai": "^1.9.1",
