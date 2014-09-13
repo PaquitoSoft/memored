@@ -5,7 +5,7 @@ Memored implements an in-memory shared cache to use in nodejs applications which
 Let's say you want your application to take advantage of multi-core CPUs using nodejs cluster module; you will be able to run several _isolated_ processes which shared nothing but a communication channel with parent process.
 If you need a fast volatile cache, common solutions would create an in-memory map for every process you run, so you end up with the same data stored several times in your machine RAM.
 
-Memored uses communication channel between master process and its workers to use a unique in-memory storage, reducing the amount of memory your application uses.
+Memored uses communication channel between master process and its workers to use a unique in-memory storage, reducing the amount of memory your application would use.
 
 ## Getting Started
 Install this module with _npm_:
