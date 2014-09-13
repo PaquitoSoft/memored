@@ -232,6 +232,7 @@ The existence of this param is to follow the *convention* about libraries callba
 
 - [Nodeguide](http://nodeguide.com/style.html#callbacks)
 - [Nodejitsu](http://docs.nodejitsu.com/articles/errors/what-are-the-error-conventions)
+- [GoSquared](https://engineering.gosquared.com/node-js-error-handling-callbacks-vs-promises)
 
 
 ## License
