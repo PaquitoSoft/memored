@@ -88,8 +88,9 @@ describe('Memored test suite', function() {
 
 			it('Should store a value in the cache', function(done) {
 				var user1 = _createUser();
-				memored.store('user1', user1, function(data) {
-					expect(data).to.equal(undefined);
+				memored.store('user1', user1, function(err, expirationTime) {
+					expect(err).to.equal(null);
+					expect(expirationTime).to.equal(undefined);
 					done();
 				});
 			});
@@ -97,11 +98,10 @@ describe('Memored test suite', function() {
 			it('Should store a value and create an expiration time when ttl is used', function(done) {
 				var user2 = _createUser(),
 					t1 = Date.now();
-				memored.store('user2', user2, 100, function(data) {
-					expect(data).to.be.an('object');
-					expect(data).to.have.keys('expirationTime');
-					expect(data.expirationTime).to.be.a('number');
-					expect(data.expirationTime).to.be.least(t1 + 100);
+				memored.store('user2', user2, 100, function(err, expirationTime) {
+					expect(err).to.equals(null);
+					expect(expirationTime).to.be.a('number');
+					expect(expirationTime).to.be.least(t1 + 100);
 					done();
 				});
 			});
@@ -114,14 +114,12 @@ describe('Memored test suite', function() {
 				var user3 = _createUser();
 				async.series({
 					storeValue: function(next) {
-						memored.store('user3', user3, function() {
-							next();
-						});
+						memored.store('user3', user3, next);
 					},
 					readValue: function(next) {
-						memored.read('user3', function(data) {
-							expect(data).to.have.keys('value');
-							expect(data.value).to.eql(user3);
+						memored.read('user3', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.eql(user3);
 							next();
 						});
 					}
@@ -129,8 +127,9 @@ describe('Memored test suite', function() {
 			});
 			
 			it('Should return an undefined entry when looking for a non-existing cache entry', function(done) {
-				memored.read('unknownKey', function(data) {
-					expect(data).to.equal(undefined);
+				memored.read('unknownKey', function(err, value) {
+					expect(err).to.equals(null);
+					expect(value).to.equal(undefined);
 					done();
 				});
 			});
@@ -141,21 +140,21 @@ describe('Memored test suite', function() {
 
 				async.series({
 					storeValue: function(next) {
-						memored.store('user4', user4, 20, function() {
-							next();
-						});
+						memored.store('user4', user4, 20, next);
 					},
 					readValue1: function(next) {
-						memored.read('user4', function(data) {
-							expect(data.value).to.eql(user4);
-							expect(data.expirationTime).to.least(t1 + 20);
+						memored.read('user4', function(err, value, expirationTime) {
+							expect(err).to.equals(null);
+							expect(value).to.eql(user4);
+							expect(expirationTime).to.least(t1 + 20);
 							next();
 						});
 					},
 					readValue2: function(next) {
 						setTimeout(function() {
-							memored.read('user4', function(data) {
-								expect(data).to.equal(undefined);
+							memored.read('user4', function(err, value) {
+								expect(err).to.equals(null);
+								expect(value).to.equal(undefined);
 								next();
 							});
 						}, 30);
@@ -171,20 +170,22 @@ describe('Memored test suite', function() {
 				var user5 = _createUser();
 				async.series({
 					storeValue: function(next) {
-						memored.store('user5', user5, function() {next();});
+						memored.store('user5', user5, next);
 					},
 					readValue1: function(next) {
-						memored.read('user5', function(data) {
-							expect(data.value).to.eql(user5);
+						memored.read('user5', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.eql(user5);
 							next();
 						});
 					},
 					removeValue: function(next) {
-						memored.remove('user5', function() {next();});
+						memored.remove('user5', next);
 					},
 					readValue2: function(next) {
-						memored.read('user5', function(data) {
-							expect(data).to.equal(undefined);
+						memored.read('user5', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.equal(undefined);
 							next();
 						});
 					}
@@ -200,20 +201,22 @@ describe('Memored test suite', function() {
 				
 				async.series({
 					soreValue1: function(next) {
-						memored.store('user6', user6, function() {next();});
+						memored.store('user6', user6, next);
 					},
 					storeValue2: function(next) {
-						memored.store('user7', user7, function() {next();});	
+						memored.store('user7', user7, next);
 					},
 					readValue1: function(next) {
-						memored.read('user6', function(data) {
-							expect(data.value).to.eql(user6);
+						memored.read('user6', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.eql(user6);
 							next();
 						});
 					},
 					readValue2: function(next) {
-						memored.read('user7', function(data) {
-							expect(data.value).to.eql(user7);
+						memored.read('user7', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.eql(user7);
 							next();
 						});
 					},
@@ -221,14 +224,16 @@ describe('Memored test suite', function() {
 						memored.clean(next);
 					},
 					readValue4: function(next) {
-						memored.read('user6', function(data) {
-							expect(data).to.equal(undefined);
+						memored.read('user6', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.equal(undefined);
 							next();
 						});
 					},
 					readValue5: function(next) {
-						memored.read('user7', function(data) {
-							expect(data).to.equal(undefined);
+						memored.read('user7', function(err, value) {
+							expect(err).to.equals(null);
+							expect(value).to.equal(undefined);
 							next();
 						});
 					},

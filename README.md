@@ -34,21 +34,21 @@ if (cluster.isMaster) {
 	memored.store('character1', han, function() {
 		console.log('Value stored!');
 
-		memored.read('character1', function(data) {
-			console.log('Read value:', data.value);
+		memored.read('character1', function(err, value) {
+			console.log('Read value:', value);
 		});
 	});
 
 	// You can also set a ttl (milliseconds)
-	memored.store('character2', luke, 1000, function(data) {
-		console.log('Value stored until:', new Date(data.expirationTime));
+	memored.store('character2', luke, 1000, function(err, expirationTime) {
+		console.log('Value stored until:', new Date(expirationTime));
 
 		setTimeout(function() {
-			memored.read('character2', function(data) {
-				console.log('Value is gone?', data === undefined);
+			memored.read('character2', function(err, value) {
+				console.log('Value is gone?', value === undefined);
+
 				process.exit();
 			});
-		
 		}, 1050);
 	});
 }
@@ -75,13 +75,11 @@ if (cluster.isMaster) {
 
 	async.series({
 		storeValue: function(next) {
-			memored.store('key1', 'My simple string value', 100, function() {
-				next();
-			});
+			memored.store('key1', 'My simple string value', 100, next);
 		},
 		readCacheSize: function(next) {
-			memored.size(function(data) {
-				console.log('Current size is 1?', data.size === 1);
+			memored.size(function(err, size) {
+				console.log('Current size is 1?', size === 1);
 				next();
 			});
 		},
@@ -89,8 +87,8 @@ if (cluster.isMaster) {
 			setTimeout(next, 600);
 		},
 		readCacheSizeAgain: function(next) {
-			memored.size(function(data) {
-				console.log('Current size is 0?', data.size === 0);
+			memored.size(function(err, size) {
+				console.log('Current size is 0?', size === 0);
 				next();
 			});
 		}
@@ -130,7 +128,8 @@ _It is intended to be called from a worker process_.
 - **value** {Mixed} (required): Whatever you want to store
 - **ttl** {Number} (optional): Time to live for this value in the cache (milliseconds)
 - **callback** {Function} (optional): Function to be call on store completion. Callback arguments:
-	- _data_ {Object}: If _ttl_ is used, this object will contain an *expirationTime* attribute with the timestamp of the moment when this entry will expire. If _ttl_ is not used, this object will be undefined.
+	- _err_ {Error}: Optional error
+	- _expirationTime_ {Number}: The timestamp of the moment when this entry will expire. If _ttl_ is not used, this value will be undefined.
 
 **Examples**:
 ```javascript
@@ -138,8 +137,8 @@ memored.store('key1', {firstname: 'Han', lastname: 'Solo'}, function() {
 	console.log('Value stored!');
 });
 
-memored.store('key2', ['a', 'b', 'c'], 15000, function(data) {
-	console.log('This value will expire on:', new Date(data.expirationTime));
+memored.store('key2', ['a', 'b', 'c'], 15000, function(err, expirationTime) {
+	console.log('This value will expire on:', new Date(expirationTime));
 });
 ```
 
@@ -152,16 +151,22 @@ _It is intended to be called from a worker process_.
 
 - **key** {String} (required): Key used to lookup the entry
 - **callback** {Function} (required): Function to be called on read completion. Callback arguments:
-	- _data_ {Object}: If the value was found and it's not expired, this object will contain an attribute named *value* with the contents of the cached entry. If the value is not found or is expired, the object will be undefined.
+	- _err_ {Error}: Optional error
+	- _value_ {Mixed}: Contents of the cached entry. If the value is not found or is expired, it will be undefined.
 
 **Example**:
 ```javascript
-memored.read('key1', function(data) {
-	console.log('Key1 value:', data.value);
+memored.read('key1', function(err, value) {
+	console.log('Key1 value:', value);
 });
 
-memored.read('unknownKey', function(data) {
-	console.log('No data read?', data === undefined);
+memored.read('key1', function(err, value, expirationTime) {
+	console.log('Key1 value:', value);
+	console.log('Key1 expiration time:', new Date(expirationTime));
+});
+
+memored.read('unknownKey', function(err, value) {
+	console.log('No data read?', value === undefined);
 });
 ```
 
@@ -173,7 +178,7 @@ _It is intended to be called from a worker process_.
 **Arguments**:
 
 - **key** {String} (required): Key used to lookup the entry
-- **callback** {Function} (optional): Function to be called on read completion. No callback arguments.
+- **callback** {Function} (optional): Function to be called on read completion.
 
 **Example**:
 ```javascript
@@ -189,7 +194,7 @@ _It is intended to be called from a worker process_.
 
 **Arguments**:
 
-- **callback** {Function} (optional): Function to be called on read completion. No callback arguments.
+- **callback** {Function} (optional): Function to be called on read completion.
 
 **Example**:
 ```javascript
@@ -205,19 +210,28 @@ This function returns the number of entries in the cache.
 **Arguments**:
 
 - **callback** {Function} (required): Function to be called on size calculation is complete. Callback arguments:
-	- _data_ {Object}: This object will contain an attribute named *size* with the number of entries in the cache.
+	- _err_ {Error}: Optional error
+	- _size_ {Number}: The number of entries in the cache.
 
 **Example**:
 
 ```javascript
-memored.size(function(data) {
-	console.log('Cache size:', data.size);
+memored.size(function(err, size) {
+	console.log('Cache size:', size);
 });
 ```
 
 ### version
 
 This is an attribute wich provides module's version number
+
+
+# Final note
+All the callbacks first parameter is an optional error object. Actually, this param will never be an error because there is no expected error in the internal code. There's no function call that can possible throw an expected error that this module would deal with.
+The existence of this param is to follow the *convention* about libraries callbacks in nodejs. As everybody expects this first callback parameter to be an optional one, I decided to include it.
+
+- [Nodeguide](http://nodeguide.com/style.html#callbacks)
+- [Nodejitsu](http://docs.nodejitsu.com/articles/errors/what-are-the-error-conventions)
 
 
 ## License

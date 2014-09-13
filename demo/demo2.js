@@ -11,13 +11,11 @@ if (cluster.isMaster) {
 
 	async.series({
 		storeValue: function(next) {
-			memored.store('key1', 'My simple string value', 100, function() {
-				next();
-			});
+			memored.store('key1', 'My simple string value', 100, next);
 		},
 		readCacheSize: function(next) {
-			memored.size(function(data) {
-				console.log('Current size is 1?', data.size === 1);
+			memored.size(function(err, size) {
+				console.log('Current size is 1?', size === 1);
 				next();
 			});
 		},
@@ -25,8 +23,8 @@ if (cluster.isMaster) {
 			setTimeout(next, 600);
 		},
 		readCacheSizeAgain: function(next) {
-			memored.size(function(data) {
-				console.log('Current size is 0?', data.size === 0);
+			memored.size(function(err, size) {
+				console.log('Current size is 0?', size === 0);
 				next();
 			});
 		}

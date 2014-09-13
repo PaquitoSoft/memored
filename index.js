@@ -55,6 +55,17 @@ function _findWorkerByPid(workerPid) {
 	return worker;
 }
 
+function _getResultParamsValues(paramsObj) {
+	var result = [null],
+		prop;
+	if (paramsObj) {
+		for (prop in paramsObj) {
+			result.push(paramsObj[prop]);
+		}
+	}
+	return result;
+}
+
 function _sendMessageToWorker(message) {
 	var worker = _findWorkerByPid(message.workerPid);
 	worker.send(message);
@@ -163,7 +174,7 @@ function _workerIncomingMessagesHandler(message) {
 
 	pendingMessage = activeMessages[message.id];
 	if (pendingMessage && pendingMessage.callback) {
-		pendingMessage.callback(message.responseParams);
+		pendingMessage.callback.apply(null, _getResultParamsValues(message.responseParams));
 		delete activeMessages[message.id];
 	}
 

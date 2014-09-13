@@ -17,18 +17,18 @@ if (cluster.isMaster) {
 	memored.store('character1', han, function() {
 		console.log('Value stored!');
 
-		memored.read('character1', function(data) {
-			console.log('Read value:', data.value);
+		memored.read('character1', function(err, value) {
+			console.log('Read value:', value);
 		});
 	});
 
 	// You can also set a ttl (milliseconds)
-	memored.store('character2', luke, 1000, function(data) {
-		console.log('Value stored until:', new Date(data.expirationTime));
+	memored.store('character2', luke, 1000, function(err, expirationTime) {
+		console.log('Value stored until:', new Date(expirationTime));
 
 		setTimeout(function() {
-			memored.read('character2', function(data) {
-				console.log('Value is gone?', data === undefined);
+			memored.read('character2', function(err, value) {
+				console.log('Value is gone?', value === undefined);
 
 				process.exit();
 			});
