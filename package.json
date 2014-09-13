@@ -9,6 +9,7 @@
   "author": "Paquitosoft",
   "license": "MIT",
   "devDependencies": {
+    "async": "^0.9.0",
     "chai": "^1.9.1",
     "faker": "^1.1.0",
     "gulp": "^3.8.7",

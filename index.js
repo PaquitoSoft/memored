@@ -94,7 +94,6 @@ function _readCacheValue(message) {
 
 function _storeCacheValue(message) {
 	cache[message.requestParams.key] = new CacheEntry(message.requestParams);
-	// if (cache[message.requestParams.key].expirationTime) {
 	if (message.requestParams.ttl) {
 		message.responseParams = {
 			expirationTime: cache[message.requestParams.key].expirationTime
@@ -114,7 +113,9 @@ function _cleanCache(message) {
 }
 
 function _getCacheSize(message) {
-	message.responseParams.size = Object.keys(cache).length;
+	message.responseParams = {
+		size: Object.keys(cache).length
+	};
 	_sendMessageToWorker(message);
 }
 
@@ -180,11 +181,11 @@ if (cluster.isMaster) {
 	});
 
 	// TODO: Only for testing purposes
-	setInterval(function() {
-		logger.log('\n------------------------------------------');
-		logger.log(cache);
-		logger.log('------------------------------------------\n');
-	}, 2000).unref();
+	// setInterval(function() {
+	//	logger.log('\n------------------------------------------');
+	//	logger.log(cache);
+	//	logger.log('------------------------------------------\n');
+	// }, 2000).unref();
 
 } else {
 
@@ -208,7 +209,7 @@ function _setup(options) {
 		if (options.purgeInterval) {
 			purgeIntervalObj = setInterval(function() {
 				_purgeCache();
-			}).unref();
+			}, options.purgeInterval).unref();
 		}
 	}
 }

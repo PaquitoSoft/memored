@@ -36,7 +36,7 @@ describe('Memored test suite', function() {
 				{
 					key: 'mock2',
 					value: _createUser(),
-					ttl: 25
+					ttl: 75
 				},
 				{
 					key: 'mock3',
@@ -47,7 +47,7 @@ describe('Memored test suite', function() {
 			it.only('Should auto-remove old data if configured to purge', function(done) {
 				async.series({
 					setup: function(next) {
-						memored.setup({purgeInterval: 175, mockData: mockedData});
+						memored.setup({purgeInterval: 50, mockData: mockedData});
 						next();
 					},
 					getCacheSize: function(next) {
@@ -57,9 +57,18 @@ describe('Memored test suite', function() {
 						});
 					},
 					wait: function(next) {
-						setTimeout(next, 200);
+						setTimeout(next, 60);
 					},
 					getCacheSize2: function(next) {
+						memored.size(function(data) {
+							expect(data.size).to.equal(2);
+							next();
+						});
+					},
+					waitAgain: function(next) {
+						setTimeout(next, 50);
+					},
+					getCacheSize3: function(next) {
 						memored.size(function(data) {
 							expect(data.size).to.equal(1);
 							next();
@@ -119,7 +128,7 @@ describe('Memored test suite', function() {
 				}, done);
 			});
 			
-			it('Should return a null entry when looking for a non-existing cache entry', function(done) {
+			it('Should return an undefined entry when looking for a non-existing cache entry', function(done) {
 				memored.read('unknownKey', function(data) {
 					expect(data).to.equal(undefined);
 					done();
