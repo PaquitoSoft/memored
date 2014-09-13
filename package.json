@@ -1,0 +1,17 @@
+{
+  "name": "memored",
+  "version": "0.0.1",
+  "description": "Shared in-memory module for cluster applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Paquitosoft",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "faker": "^1.1.0",
+    "gulp": "^3.8.7",
+    "gulp-mocha": "^1.0.0"
+  }
+}
