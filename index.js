@@ -74,7 +74,7 @@ function _sendMessageToWorker(message) {
 function _sendMessageToMaster(message) {
 	message.channel = 'memored';
 	message.workerPid = process.pid;
-	message.id = messagesCounter++;
+	message.id = process.pid + '::' + messagesCounter++;
 	process.send(message);
 	if (message.callback) {
 		activeMessages[message.id] = message;
