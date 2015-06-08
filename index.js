@@ -15,17 +15,17 @@ var activeMessages = {};
 var purgeIntervalObj;
 
 /*
-	message
-		- workerPid
-		- type
-		- requestParams
-*/
+ message
+ - workerPid
+ - type
+ - requestParams
+ */
 
 var cache = {};
 
 function CacheEntry(data) { // ttl -> milliseconds
 	this.key = data.key;
-	this.value = data.value;	
+	this.value = data.value;
 	this.creationTime = Date.now();
 	if (data.ttl) {
 		this.ttl = data.ttl;
@@ -90,16 +90,16 @@ function _readCacheValue(message) {
 		});
 		cacheEntry = null;
 	}
-	
+
 	if (cacheEntry) {
 		message.responseParams = {
 			value: cacheEntry.value
-		};	
+		};
 		if (cacheEntry.expirationTime) {
 			message.responseParams.expirationTime = cacheEntry.expirationTime;
 		}
 	}
-	
+
 	_sendMessageToWorker(message);
 }
 
@@ -130,6 +130,13 @@ function _getCacheSize(message) {
 	_sendMessageToWorker(message);
 }
 
+function _getCacheKeys(message) {
+	message.responseParams = {
+		size: Object.keys(cache)
+	};
+	_sendMessageToWorker(message);
+}
+
 function _purgeCache() {
 	var now = Date.now();
 	Object.keys(cache).forEach(function(cacheKey) {
@@ -141,7 +148,7 @@ function _purgeCache() {
 
 function _masterIncomingMessagesHanlder(message) {
 	logger.log('Master received message:', message);
-	
+
 	if (!message || message.channel !== 'memored') return false;
 
 	switch (message.type) {
@@ -159,6 +166,9 @@ function _masterIncomingMessagesHanlder(message) {
 			break;
 		case 'size':
 			_getCacheSize(message);
+			break;
+		case 'keys':
+			_getCacheKeys(message);
 			break;
 		default:
 			logger.warn('Received an invalid message type:', message.type);
@@ -307,6 +317,19 @@ function _reset(callback) {
 	}
 }
 
+function _keys(callback) {
+	if (cluster.isWorker) {
+		_sendMessageToMaster({
+			type: 'keys',
+			callback: callback
+		});
+	} else {
+		setImmediate(callback,{
+			keys: Object.keys(cache)
+		});
+	}
+}
+
 module.exports = {
 	version: packageInfo.version,
 	setup: _setup,
@@ -315,5 +338,6 @@ module.exports = {
 	remove: _remove,
 	clean: _clean,
 	size: _size,
-	reset: _reset
+	reset: _reset,
+	keys: _keys
 };
