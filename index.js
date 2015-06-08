@@ -132,7 +132,7 @@ function _getCacheSize(message) {
 
 function _getCacheKeys(message) {
 	message.responseParams = {
-		size: Object.keys(cache)
+		keys: Object.keys(cache)
 	};
 	_sendMessageToWorker(message);
 }
