@@ -259,6 +259,52 @@ describe('Memored test suite', function() {
 				});
 			});
 		});
+        
+		describe('Memored - keys', function() {
+
+			it('Should return keys for entries in the cache', function(done) {
+                
+                // clean cache to ensure we're measuring against a fresh slate
+                memored.clean(function() {
+
+                    // create three users with different key prefixes
+    				memored.store('abc-user1', _createUser(), function(err, expirationTime) {
+        				memored.store('abc-user2', _createUser(), function(err, expirationTime) {
+            				memored.store('def-user3', _createUser(), function(err, expirationTime) {
+                                
+                                // find the keys for items in the cache
+        						memored.keys(function(err, keys) {
+                                    
+                                    // should be 3 keys total
+        							expect(keys.length).to.equal(3);
+                                    
+                                    // count the keys by prefix
+                                    var abcCount = 0;
+                                    var defCount = 0;
+                                    for (var i = 0; i < keys.length; i++) {
+                                        if (keys[i].indexOf("abc-") === 0) {
+                                            abcCount++;
+                                        } else if (keys[i].indexOf("def-") === 0) {
+                                            defCount++;
+                                        }
+                                    }
+                                    
+                                    // two keys that start with "abc-"
+                                    expect(abcCount).to.equal(2);
+                                    
+                                    // one key that starts with "def-"
+                                    expect(defCount).to.equal(1);                                    
+                                    
+                                    done();
+        						});
+            				});
+        				});
+    				});                    
+                });
+			});
+
+		});
+        
 	
 	}
 
