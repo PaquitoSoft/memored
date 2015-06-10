@@ -302,7 +302,7 @@ describe('Memored test suite', function() {
 							expect(abcCount).to.equal(2);
 							
 							// one key that starts with "def-"
-							expect(defCount).to.equal(1);                                    
+							expect(defCount).to.equal(1);
 							
 							done();
 						});
@@ -312,7 +312,6 @@ describe('Memored test suite', function() {
 
 		});
 		
-	
 	}
 
 });
