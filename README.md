@@ -221,9 +221,27 @@ memored.size(function(err, size) {
 });
 ```
 
+### keys(callback)
+
+This function returns an array of the keys for objects in the cache.
+
+**Arguments**:
+
+- **callback** {Function} (required): Function to be called when keys calculation is complete. Callback arguments:
+	- _err_ {Error}: Optional error
+	- _keys_ {Array}: An array of strings for the keys of the entries in the cache.
+
+**Example**:
+
+```javascript
+memored.keys(function(err, keys) {
+	console.log('Cache keys:', keys);
+});
+```
+
 ### version
 
-This is an attribute wich provides module's version number
+This is an attribute which provides module's version number
 
 
 # Final note
