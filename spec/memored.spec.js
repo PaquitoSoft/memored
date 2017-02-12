@@ -94,6 +94,15 @@ describe('Memored test suite', function() {
 					done();
 				});
 			});
+            
+            it('Should store accept to store a value with no callback', function(done) {
+                var user21 = _createUser();
+                memored.store('user21', user21);
+                memored.size(function(err, count) {
+                    expect(count).to.equals(1);
+                    done();
+                });
+            });
 
 			it('Should store a value and create an expiration time when ttl is used', function(done) {
 				var user2 = _createUser(),
