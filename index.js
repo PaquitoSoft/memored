@@ -23,6 +23,16 @@ var purgeIntervalObj;
 
 var cache = {};
 
+var masterMessagesHandlerMap = {
+	'read': _readCacheValue,
+	'store': _storeCacheValue,
+	'remove': _removeCacheValue,
+	'clean': _cleanCache,
+	'size': _getCacheSize,
+	'keys': _getCacheKeys,
+    'unknown': function(msg) { logger.warn('Received an invalid message type:', msg.type); }
+};
+
 function CacheEntry(data) { // ttl -> milliseconds
 	this.key = data.key;
 	this.value = data.value;
@@ -146,33 +156,16 @@ function _purgeCache() {
 	});
 }
 
-function _masterIncomingMessagesHanlder(message) {
+function _masterIncomingMessagesHandler(message) {
+    var handler;
+    
 	logger.log('Master received message:', message);
 
 	if (!message || message.channel !== 'memored') return false;
 
-	switch (message.type) {
-		case 'read':
-			_readCacheValue(message);
-			break;
-		case 'store':
-			_storeCacheValue(message);
-			break;
-		case 'remove':
-			_removeCacheValue(message);
-			break;
-		case 'clean':
-			_cleanCache(message);
-			break;
-		case 'size':
-			_getCacheSize(message);
-			break;
-		case 'keys':
-			_getCacheKeys(message);
-			break;
-		default:
-			logger.warn('Received an invalid message type:', message.type);
-	}
+    handler = masterMessagesHandlerMap[message.type] || masterMessagesHandlerMap.unknown;
+
+    handler(message);
 }
 
 function _workerIncomingMessagesHandler(message) {
@@ -193,12 +186,12 @@ function _workerIncomingMessagesHandler(message) {
 if (cluster.isMaster) {
 
 	Object.keys(cluster.workers).forEach(function(workerId) {
-		cluster.workers[workerId].on('message', _masterIncomingMessagesHanlder);
+		cluster.workers[workerId].on('message', _masterIncomingMessagesHandler);
 	});
 
 	// Listen for new workers so we can listen to its messages
 	cluster.on('fork', function(worker) {
-		worker.on('message', _masterIncomingMessagesHanlder);
+		worker.on('message', _masterIncomingMessagesHandler);
 	});
 
 	// TODO: Only for testing purposes
