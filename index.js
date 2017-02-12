@@ -358,10 +358,10 @@ function _size(callback) {
 	}
 }
 
-function _reset(callback) {
+function _reset() {
 	if (cluster.isMaster) {
 		clearInterval(purgeIntervalObj);
-		setImmediate(callback);
+        cache = {};
 	} else {
 		logger.warn('Memored::reset# Cannot call this function from a worker process');
 	}
