@@ -4,28 +4,29 @@
   "description": "Shared in-memory module for cluster applications",
   "main": "index.js",
   "scripts": {
-    "test": "gulp"
+    "dev": "mocha --ui bdd --reporter spec --no-exit --watch ./spec",
+    "test": "mocha --ui bdd --reporter spec --no-exit ./spec"
   },
   "author": "Paquitosoft",
   "license": "MIT",
   "keywords": [
-  	"cache",
-  	"memory",
-  	"shared"
+    "cache",
+    "memory",
+    "shared"
   ],
   "repository": {
-  	"type": "git",
-  	"url": "https://github.com/PaquitoSoft/memored.git"
+    "type": "git",
+    "url": "https://github.com/PaquitoSoft/memored.git"
   },
   "bugs": {
-  	"url": "https://github.com/PaquitoSoft/memored/issues"
+    "url": "https://github.com/PaquitoSoft/memored/issues"
   },
-  "license": "MIT",
   "devDependencies": {
     "async": "^0.9.0",
     "chai": "^1.9.1",
     "faker": "^1.1.0",
     "gulp": "^3.8.7",
-    "gulp-mocha": "^1.0.0"
+    "gulp-mocha": "^1.0.0",
+    "mocha": "^3.2.0"
   }
 }

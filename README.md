@@ -117,7 +117,7 @@ memored.setup({
 });
 ```
 
-### store(key, value, [ttl], callback)
+### store(key, value, [ttl], [callback])
 
 This function stores a value in the cache.
 _It is intended to be called from a worker process_.
@@ -141,6 +141,36 @@ memored.store('key2', ['a', 'b', 'c'], 15000, function(err, expirationTime) {
 	console.log('This value will expire on:', new Date(expirationTime));
 });
 ```
+
+### multiStore(map, [ttl], [callback])
+
+This function stores several values in the cache.
+_It is intended to be called from a worker process_.
+
+**Arguments**:
+
+- **map** {Object} (required): Map where the keys represents the keys for the entry in the cache and the values represent the data to be stored.
+- **ttl** {Number} (optional): Time to live for this value in the cache (milliseconds). All the entries will have the same _ttl_. As all entries will be stored in the same _tick_, its expiration time will be practically the same.
+- **callback** {Function} (optional): Function to be call on store completion. Callback arguments:
+	- _err_ {Error}: Optional error
+	- _expirationTime_ {Number}: The timestamp of the moment when the first of the entries will expire. If _ttl_ is not used, this value will be undefined.
+
+**Examples**:
+```javascript
+var users = {
+    'user1': { name: 'Han Solo' },
+    'user2': { name: 'Princess Leia' },
+    'user3': { name: 'Luke Skywalker' }
+};
+memored.multiStore(users, function() {
+    console.log('Users saved');
+});
+
+memored.multiStore(users, 15000, function(err, expirationTime) {
+    console.log('First value will expire on:', new Date(expirationTime));
+});
+```
+
 
 ### read(key, callback)
 
@@ -167,6 +197,30 @@ memored.read('key1', function(err, value, expirationTime) {
 
 memored.read('unknownKey', function(err, value) {
 	console.log('No data read?', value === undefined);
+});
+```
+
+### multiRead(keys, callback)
+
+This function reads several values from the cache.
+_It is intended to be called from a worker process_.
+
+**Arguments**:
+
+- **keys** {Array(string)} (required): List of keys to lookup entries in the cache
+- **callback** {Function} (required): Function to be called on read completion. Callback arguments:
+	- _err_ {Error}: Optional error
+    - _values_ {Object}: An object where its keys will be the keys used in the _keys_ array and their values will be objects representing cached entries with the attributes _value_ and _expirationTime_. If a cache entry is not found for a given key, that key will not be included in the _values_. Only found entries will exist in the result.
+    
+**Example**;
+```javascript
+memored.multiRead(['key1', 'key2', 'unknownKey'], function(err, values) {
+    console.log('Key1 value:', values.key1.value);
+    console.log('Key1 expiration time:', values.key1.expirationTime);
+    
+    console.log(Object.keys(values)); // ['key1', 'key2']
+    
+    console.log('unknownKey:', values.unknownKey); // undefined
 });
 ```
 

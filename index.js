@@ -242,6 +242,36 @@ function _read(key, callback) {
 	}
 }
 
+function _multiRead(keys, callback) {
+    var counter = 0,
+        results = {};
+    
+    function _multiReadCallback(err, value, expirationTime) {
+        if (value) {
+            results[keys[counter]] = {
+                value: value,
+                expirationTime
+            };
+        }
+        
+        if (++counter >= keys.length) {
+            callback(err, results);
+        }
+    }
+    
+    if (cluster.isWorker) {
+        if (!Array.isArray(keys)) {
+            logger.warn('Memored::multiRead# First parameter must be an array');
+        }
+    
+        keys.forEach(function(key) {
+            _read(key, _multiReadCallback);
+        });
+	} else {
+		logger.warn('Memored::read# Cannot call this function from master process');
+	}
+}
+
 function _store(key, value, ttl, callback) {
 	if (cluster.isWorker) {
 		if (callback === undefined) {
@@ -261,6 +291,33 @@ function _store(key, value, ttl, callback) {
 	} else {
 		logger.warn('Memored::store# Cannot call this function from master process');
 	}
+}
+
+function _multiStore(map, ttl, callback) {
+    var keys,
+        _expirationTime,
+        counter = 0;
+                
+    if (cluster.isWorker) {
+        if (callback === undefined) {
+			callback = ttl;
+			ttl = undefined;
+		}
+        
+        keys = Object.keys(map);
+        keys.forEach(function(key) {
+            _store(key, map[key], ttl, function _callback(err, expirationTime) {
+                counter++;
+                if (keys[0] === key) {
+                    _expirationTime = expirationTime;
+                } else if (counter === keys.length) {
+                    callback(err, _expirationTime);
+                }
+            });
+        });
+    } else {
+        logger.warn('Memored::multiStore# Cannot call this function from master process');
+    }
 }
 
 function _remove(key, callback) {
@@ -327,7 +384,9 @@ module.exports = {
 	version: packageInfo.version,
 	setup: _setup,
 	read: _read,
+    multiRead: _multiRead,
 	store: _store,
+    multiStore: _multiStore,
 	remove: _remove,
 	clean: _clean,
 	size: _size,

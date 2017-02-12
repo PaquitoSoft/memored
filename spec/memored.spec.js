@@ -106,6 +106,36 @@ describe('Memored test suite', function() {
 				});
 			});
 
+			it('Should store several values at the same time in the cache', function(done) {
+				var users = {
+					'user1': _createUser(),
+					'user2': _createUser(),
+					'user3': _createUser()
+				};
+				
+				memored.multiStore(users, function(err, expirationTime) {
+                    expect(err).to.equal(null);
+                    expect(expirationTime).to.equal(undefined);
+                    done();
+				});
+			});
+
+            it('Should store several values and return an expiration time when ttl is used', function() {
+                var users = {
+    					'user4': _createUser(),
+    					'user5': _createUser(),
+    					'user6': _createUser()
+    				},
+                    t1 = Date.now();
+                
+                memored.multiStore(users, 100, function(err, expirationTime) {
+                    expect(err).to.equals(null);
+					expect(expirationTime).to.be.a('number');
+					expect(expirationTime).to.be.least(t1 + 100);
+                    done();
+                });
+            });
+
 		});
 
 		describe('Memored - read', function() {
@@ -126,6 +156,58 @@ describe('Memored test suite', function() {
 				}, done);
 			});
 			
+            it('Should read a bunch of cache entries', function(done) {
+                var users = {
+					'user7': _createUser(),
+					'user8': _createUser(),
+					'user9': _createUser()
+				};
+                
+                async.series({
+					storeValue: function(next) {
+						memored.multiStore(users, next);
+					},
+					readValue: function(next) {
+						memored.multiRead(Object.keys(users).concat('foo'), function(err, values) {
+							expect(err).to.equals(null);
+                            expect(Object.keys(values).length).to.eql(3);
+                            expect(Object.keys(values)).to.contain('user7', 'user8', 'user9');
+                            expect(values['user7'].value).to.eql(users['user7']);
+                            expect(values['user8'].value).to.eql(users['user8']);
+                            expect(values['user9'].value).to.eql(users['user9']);
+                            expect(values['foo']).to.equals(undefined);
+							next();
+						});
+					}
+				}, done);
+            });
+            
+            it('Should get independent cache entries when reading a bunch of keys', function(done) {
+                var user10 = _createUser(),
+                    user11 = _createUser(),
+                    t1, t2;
+                    
+                async.series({
+                    storeUser1: function(next) {
+                        t1 = Date.now();
+                        memored.store('user10', user10, 500, next);
+                    },
+                    storeUser2: function(next) {
+                        t2 = Date.now();
+                        memored.store('user11', user11, 1000, next);
+                    },
+                    readValues: function(next) {
+                        memored.multiRead(['user10', 'user11'], function(err, values) {
+                            expect(values.user10.value).to.eql(user10);
+                            expect(values.user10.expirationTime).to.least(t1 + 500);
+                            expect(values.user11.value).to.eql(user11);
+                            expect(values.user11.expirationTime).to.least(t1 + 1000);
+                            next();
+                        });
+                    }
+                }, done)
+            });
+            
 			it('Should return an undefined entry when looking for a non-existing cache entry', function(done) {
 				memored.read('unknownKey', function(err, value) {
 					expect(err).to.equals(null);
