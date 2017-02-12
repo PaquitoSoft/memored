@@ -334,6 +334,29 @@ function _remove(key, callback) {
 	}
 }
 
+function _multiRemove(keys, callback) {
+    var counter = 0;
+    
+    function _multiRemoveCallback() {
+        if (++counter >= keys.length && callback) {
+            callback();
+        }
+    }
+    
+    if (cluster.isWorker) {
+        if (!Array.isArray(keys)) {
+            return logger.warn('Memored::multiRemove# First parameter must be an array');
+        }
+        
+        keys.forEach(function(key) {
+            _remove(key, _multiRemoveCallback);
+        });
+    
+	} else {
+		logger.warn('Memored::remove# Cannot call this function from master process');
+	}
+}
+
 function _clean(callback) {
 	if (cluster.isWorker) {
 		_sendMessageToMaster({
@@ -388,6 +411,7 @@ module.exports = {
 	store: _store,
     multiStore: _multiStore,
 	remove: _remove,
+    multiRemove: _multiRemove,
 	clean: _clean,
 	size: _size,
 	reset: _reset,

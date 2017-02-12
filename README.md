@@ -231,13 +231,30 @@ _It is intended to be called from a worker process_.
 
 **Arguments**:
 
-- **key** {String} (required): Key used to lookup the entry
-- **callback** {Function} (optional): Function to be called on read completion.
+- **key** {String} (required): Key for the entry to be removed.
+- **callback** {Function} (optional): Function to be called on removal completion.
 
 **Example**:
 ```javascript
 memored.remove('key1', function() {
 	console.log('Key removed from the cache.');
+});
+```
+
+### multiRemove(keys, callback)
+
+This function removes several entries from the cache.
+_It is intended to be called from a worker process_.
+
+**Arguments**:
+
+- **keys** {Array(string)} (required): Keys for the entries to be removed. If any key is not found in the cache, it's just ignored.
+- **callback** {Function} (optional): Function to be called on removal completion.
+
+**Example**:
+```javascript
+memored.multiRemove(['key1', 'key2', 'unknownKey'], function() {
+    console.log('Entries foundn in the cache has been removed.')
 });
 ```
 

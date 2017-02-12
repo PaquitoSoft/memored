@@ -282,10 +282,44 @@ describe('Memored test suite', function() {
 					}
 				}, done);
 			});
+            
+            it('Should remove several keys at once', function(done) {
+                var users = {
+					'user1': _createUser(),
+					'user2': _createUser(),
+					'user3': _createUser()
+				};
+                    
+                async.series({
+                    storesValues: function(next) {
+                        memored.multiStore(users, next);
+                    },
+                    checkCache: function(next) {
+                        memored.size(function(err, count) {
+                            expect(count).to.equals(3);
+                            next();
+                        });
+                    },
+                    removeValues: function(next) {
+                        memored.multiRemove(Object.keys(users).concat('foo'), next);
+                    },
+                    checkCacheAgain: function(next) {
+                        memored.size(function(err, count) {
+                            expect(count).to.equals(0);
+                            next();
+                        });
+                    }
+                }, done);
+            });
 
 		});
 
 		describe('Memored - clean', function() {
+            
+            afterEach(function(done) {
+                memored.clean(done);
+            });
+            
 			it('Should remove all values in cache', function(done) {
 				var user6 = _createUser(),
 					user7 = _createUser();
