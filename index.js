@@ -261,7 +261,7 @@ function _multiRead(keys, callback) {
     
     if (cluster.isWorker) {
         if (!Array.isArray(keys)) {
-            logger.warn('Memored::multiRead# First parameter must be an array');
+            return logger.warn('Memored::multiRead# First parameter must be an array');
         }
     
         keys.forEach(function(key) {
@@ -274,7 +274,7 @@ function _multiRead(keys, callback) {
 
 function _store(key, value, ttl, callback) {
 	if (cluster.isWorker) {
-		if (callback === undefined) {
+		if (typeof ttl === 'function') {
 			callback = ttl;
 			ttl = undefined;
 		}
@@ -299,7 +299,7 @@ function _multiStore(map, ttl, callback) {
         counter = 0;
                 
     if (cluster.isWorker) {
-        if (callback === undefined) {
+        if (typeof ttl === 'function') {
 			callback = ttl;
 			ttl = undefined;
 		}
@@ -310,7 +310,7 @@ function _multiStore(map, ttl, callback) {
                 counter++;
                 if (keys[0] === key) {
                     _expirationTime = expirationTime;
-                } else if (counter === keys.length) {
+                } else if (counter === keys.length && callback) {
                     callback(err, _expirationTime);
                 }
             });
