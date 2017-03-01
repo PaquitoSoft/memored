@@ -375,7 +375,7 @@ function _size(callback) {
 			callback: callback
 		});
 	} else {
-		setImmediate(callback,{
+		setImmediate(callback, null, {
 			size: Object.keys(cache).length
 		});
 	}
@@ -397,7 +397,7 @@ function _keys(callback) {
 			callback: callback
 		});
 	} else {
-		setImmediate(callback,{
+		setImmediate(callback, {
 			keys: Object.keys(cache)
 		});
 	}

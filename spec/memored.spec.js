@@ -1,6 +1,6 @@
 'use strict';
 
-/* global describe, after, it */
+/* global describe, beforeEach, after, afterEach, it */
 var cluster = require('cluster'),
 	expect = require('chai').expect,
 	faker = require('faker'),
@@ -51,7 +51,7 @@ describe('Memored test suite', function() {
 						next();
 					},
 					getCacheSize: function(next) {
-						memored.size(function(data) {
+						memored.size(function(err, data) {
 							expect(data.size).to.equal(3);
 							next();
 						});
@@ -60,7 +60,7 @@ describe('Memored test suite', function() {
 						setTimeout(next, 60);
 					},
 					getCacheSize2: function(next) {
-						memored.size(function(data) {
+						memored.size(function(err, data) {
 							expect(data.size).to.equal(2);
 							next();
 						});
@@ -69,7 +69,7 @@ describe('Memored test suite', function() {
 						setTimeout(next, 50);
 					},
 					getCacheSize3: function(next) {
-						memored.size(function(data) {
+						memored.size(function(err, data) {
 							expect(data.size).to.equal(1);
 							next();
 						});
@@ -82,6 +82,10 @@ describe('Memored test suite', function() {
 
 		after(function() {
 			process.exit();
+		});
+
+		beforeEach(function(done) {
+			memored.clean(done);
 		});
 
 		describe('Memored - store', function() {
@@ -98,8 +102,9 @@ describe('Memored test suite', function() {
             it('Should store accept to store a value with no callback', function(done) {
                 var user21 = _createUser();
                 memored.store('user21', user21);
+                
                 memored.size(function(err, count) {
-                    expect(count).to.equals(1);
+					expect(count).to.equals(1);
                     done();
                 });
             });
@@ -129,19 +134,19 @@ describe('Memored test suite', function() {
 				});
 			});
 
-            it('Should store several values and return an expiration time when ttl is used', function() {
+            it('Should store several values and return an expiration time when ttl is used', function(done) {
                 var users = {
-    					'user4': _createUser(),
-    					'user5': _createUser(),
-    					'user6': _createUser()
-    				},
+						'user4': _createUser(),
+						'user5': _createUser(),
+						'user6': _createUser()
+					},
                     t1 = Date.now();
                 
                 memored.multiStore(users, 100, function(err, expirationTime) {
                     expect(err).to.equals(null);
 					expect(expirationTime).to.be.a('number');
 					expect(expirationTime).to.be.least(t1 + 100);
-                    done();
+					done();
                 });
             });
 
@@ -181,10 +186,10 @@ describe('Memored test suite', function() {
 							expect(err).to.equals(null);
                             expect(Object.keys(values).length).to.eql(3);
                             expect(Object.keys(values)).to.contain('user7', 'user8', 'user9');
-                            expect(values['user7'].value).to.eql(users['user7']);
-                            expect(values['user8'].value).to.eql(users['user8']);
-                            expect(values['user9'].value).to.eql(users['user9']);
-                            expect(values['foo']).to.equals(undefined);
+							expect(values['user7'].value).to.eql(users['user7']);
+							expect(values['user8'].value).to.eql(users['user8']);
+							expect(values['user9'].value).to.eql(users['user9']);
+							expect(values['foo']).to.equals(undefined);
 							next();
 						});
 					}
@@ -214,7 +219,7 @@ describe('Memored test suite', function() {
                             next();
                         });
                     }
-                }, done)
+                }, done);
             });
             
 			it('Should return an undefined entry when looking for a non-existing cache entry', function(done) {
@@ -404,7 +409,7 @@ describe('Memored test suite', function() {
 							memored.store('def-user3', _createUser(), next);
 						}
 					}, function(err) {
-						expect(err).to.equals(undefined);
+						expect(err).to.equals(null);
 
 						// find the keys for items in the cache
 						memored.keys(function(err, keys) {
