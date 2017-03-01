@@ -250,7 +250,7 @@ function _multiRead(keys, callback) {
         if (value) {
             results[keys[counter]] = {
                 value: value,
-                expirationTime
+                expirationTime: expirationTime
             };
         }
         
