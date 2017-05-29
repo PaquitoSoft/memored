@@ -14,6 +14,8 @@ var activeMessages = {};
 
 var purgeIntervalObj;
 
+var beforePurgeFunction;
+
 /*
  message
  - workerPid
@@ -151,7 +153,9 @@ function _purgeCache() {
 	var now = Date.now();
 	Object.keys(cache).forEach(function(cacheKey) {
 		if (cache[cacheKey].expirationTime && cache[cacheKey].expirationTime < now) {
-			delete cache[cacheKey];
+			if (beforePurgeFunction(cache[cacheKey])) {
+				delete cache[cacheKey];
+			}
 		}
 	});
 }
@@ -219,6 +223,10 @@ function _setup(options) {
 				cache[mock.key] = new CacheEntry(mock);
 			});
 		}
+		
+		beforePurgeFunction = (options.beforePurge) ? options.beforePurge : function() {
+			return true;
+		};
 
 		if (options.purgeInterval) {
 			purgeIntervalObj = setInterval(function() {
