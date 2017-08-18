@@ -107,13 +107,18 @@ This function is used to configure _memored_.
 **Arguments**:
 
 - **purgeInterval** {Number} (optional): Configures and triggers _memored_ expired entries auto deletion. Value expressed in milliseconds. _It's only used when called this method from the master process of your application_.
+- **beforePurge** {Function} (optional): This function will be called before delete for every expired entry. Return true to continue purge. Or Return false to cancel the purge process but this entry is still expired and will be delete in next cycle.
 - **logger** {Object} (optional): In you want _memored_ to log something, you must provide an object implementing *log* and *warn* functions.
 
 **Example**:
 ```javascript
 memored.setup({
 	purgeInterval: 15000,
-	logger: console
+	logger: console,
+	beforePurge: function(entry) {
+		console.log(entry);
+		return true;
+	}
 });
 ```
 
